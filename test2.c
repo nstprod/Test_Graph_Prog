@@ -4,17 +4,7 @@
 
 #define PATH_MAX 30
 
-int compare_files(FILE *in, FILE *out){
-    char c1, c2;
 
-    while(((c1 = fgetc(in)) != EOF) && ((c2 =fgetc(out)) != EOF)){
-        if(c1 != c2){
-            return 0;
-        }
-    }
-    return 1;
-
-}
 
 // function to go through imput to manual graph generation
 // type1: 1 - manual  graph 2 - random graph
@@ -33,6 +23,18 @@ void manual_mode(int e, int n, FILE *fp, int type1, int type2){
 
 void llm_mode(FILE *fp){
     fprintf(fp, "2\n");
+}
+
+int compare_files(FILE *in, FILE *out){
+    char c1, c2;
+
+    while(((c1 = fgetc(in)) != EOF) && ((c2 =fgetc(out)) != EOF)){
+        if(c1 != c2){
+            return 0;
+        }
+    }
+    return 1;
+
 }
 
 void save_test(FILE * fp){
@@ -108,11 +110,12 @@ int analyze_rgraph( int e, int n, FILE *out, int type){
 
 }
 
-int test(FILE * fp, int opt, int argc, char **argv){
+int test(FILE * fp, int opt){
     char line[100];
     int g_type = 1;
     int e, n, d;
     char req[100];
+    char *files[] = {"input/in.txt", "input/in2.txt", "input/in3.txt", "input/in4.txt"};
 
     printf("> details:\n");
     switch (opt) {
@@ -164,25 +167,34 @@ int test(FILE * fp, int opt, int argc, char **argv){
         
         case 7:
             g_type = 2;
-            e = 10; n = 9; d = 1;
+            e = 30; n = 9; d = 1;
             break;
             
-        case 8: 
+        case 8: // graphs made with llm
             g_type = 3;
             e = 13; n = 11; d = 2;
             strcpy(req, "Create an udirected graph with 11 vertices and 13 edges\n");
             break;
+        case 9: 
+            g_type = 3;
+            e = 10; n = 5; d = 1;
+            strcpy(req, "Create a directed graph with 5 vertices and 10 edges\n");
+            break;
 
     }
-
+    if (g_type == 3){
+    printf("    Requested: %s", req);
+    }
     printf("    Enabled '%s'\n", g_type != 3 ? "manual parameters input" : "chat mode");
     if (g_type != 3){
         printf("    Enabled '%s'\n", g_type == 1 ? "manual edge input" : "Random graph");
-        printf("    Enabled '%s' graph type\n", d == 1 ? "Directed" : "Undirected");
+        
     }
+    printf("    Enabled '%s' graph type\n", d == 1 ? "Directed" : "Undirected");
+    
+    
     printf("    Asked for %d nodes\n", n);
     printf("    Asked for %d edges\n", e);
-
     if (g_type == 2){
         manual_mode(e, n, fp, g_type, d);
     }
@@ -203,7 +215,8 @@ int test(FILE * fp, int opt, int argc, char **argv){
     pclose(fp);
 
     if (g_type == 1){
-        FILE *in = argc > opt ? fopen(argv[opt], "r") : NULL;
+        puts(files[opt-1]);
+        FILE *in = fopen(files[opt-1], "r");
         if (in == NULL){
             printf("Provide comparison file\n");
             return 0;
@@ -229,36 +242,44 @@ void print_test_status(int *status, int n){
     printf("RESULTS:\n");
     for(int i =0; i<n; i++){
         if(status[i]==1){
+            printf("\033[0;32m"); //green color
             printf("Test[%d] passed\n",i+1);
+            printf("\033[0m");
         }else{
+            printf("\033[0;31m"); //red color
             printf("Test[%d] failed\n",i+1);
+            printf("\033[0m");
         }
     }
 
 }
 
-int main(int argc, char **argv){
+int main(){
 
     int status;
     char path[PATH_MAX];
 
-    int t_num = 8;
+    int t_num = 9;
     int *test_status = malloc(sizeof(int) * t_num);
 
     for (int i = 1; i <= t_num ; i++){
 
         FILE *fp = popen("./graph_cli > /dev/null 2>&1", "w"); // remove stdbuf -oL
     
-        
-            
-        /*
-        fgets(path, PATH_MAX, fp);
-            printf("%s", path);
-        */
        if (fp != NULL){
             printf("Test %d STARTED\n", i);
-            int r = test(fp, i, argc, argv);
-            printf("Test %d FINISHED: test resulted in %s\n\n", i, r == 1 ? "SUCCESS" : "FAILURE");
+            int r = test(fp, i);
+            if (r == 0){
+                printf("\033[0;31m"); //red color
+                printf("Test %d FINISHED: test resulted in %s\n\n", i, "FAILURE");
+                printf("\033[0m");
+            }
+            else if (r ==1){
+                printf("\033[0;32m"); //green color
+                printf("Test %d FINISHED: test resulted in %s\n\n", i, "SUCCESS");
+                printf("\033[0m");
+            }
+            //printf("Test %d FINISHED: test resulted in %s\n\n", i, r == 1 ? "SUCCESS" : "FAILURE");
             test_status[i-1] = r;
        }
         
@@ -268,3 +289,5 @@ int main(int argc, char **argv){
     
     return 0;
 }
+
+
