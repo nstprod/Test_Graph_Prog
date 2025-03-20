@@ -17,30 +17,27 @@ int compare_files(FILE *in, FILE *out){
 }
 
 // function to go through imput to manual graph generation
-// type 1 - directed graph 2 - undirected graph
-void manual_graph(int e, int n, FILE *fp, int type){
+// type1: 1 - manual  graph 2 - random graph
+// type2: 1 - directed graph 2 - undirected graph
+
+
+void manual_mode(int e, int n, FILE *fp, int type1, int type2){
     fprintf(fp, "1\n");
-    fprintf(fp, "1\n");
-    fprintf(fp, "%d\n", type);
+    fprintf(fp, "%d\n", type1);
+    fprintf(fp, "%d\n", type2);
     fprintf(fp, "%d\n", n);
     fprintf(fp, "%d\n", e);
 }
 
-void random_graph(int e, int n, FILE *fp, int type){
-    fprintf(fp, "1\n");
+
+
+void llm_mode(FILE *fp){
     fprintf(fp, "2\n");
-    fprintf(fp, "%d\n", type);
-    fprintf(fp, "%d\n", n);
-    fprintf(fp, "%d\n", e);
+}
+
+void save_test(FILE * fp){
     fprintf(fp, "yes\n");
     fprintf(fp, "test\n");
-}
-
-int in_arr(int value, int *arr, int size){
-    while (size --)
-        if (value == *(arr++)) return 1;
-    return 0;
-        
 }
 
 int analyze_rgraph(int opt, int e, int n, FILE *out, int type){
@@ -107,82 +104,94 @@ int analyze_rgraph(int opt, int e, int n, FILE *out, int type){
 }
 
 int test(FILE * fp, int opt, int argc, char **argv){
-
+    char line[50];
+    int g_type = 1;
+    int e, n, d;
+    char req[100];
     switch (opt) {
         case 1:
-            manual_graph(3, 3, fp, 2);
+            manual_mode(3, 3, fp, g_type, 2);
             // 3 mnode and 3 edges graph 
             fprintf(fp, "0 1\n");
             fprintf(fp, "0 2\n");
             fprintf(fp, "2 1\n");
-            fprintf(fp, "yes\n");
-            fprintf(fp, "test\n");
             break;
         case 2:
-            manual_graph(3, 3, fp, 1);
+            manual_mode(3, 3, fp, g_type, 1);
             // 3 mnode and 3 edges graph 
             fprintf(fp, "0 1\n");
             fprintf(fp, "0 2\n");
             fprintf(fp, "2 1\n");
-            fprintf(fp, "yes\n");
-            fprintf(fp, "test\n");
             break;
         case 3:
-            manual_graph(3, 5, fp, 1);
+            manual_mode(3, 5, fp, g_type, 1);
             // 3 mnode and 3 edges graph 
             fprintf(fp, "0 1\n");
             fprintf(fp, "0 1\n"); //this edge exists
             fprintf(fp, "2 7\n"); // node index out of range
             fprintf(fp, "0 4\n");
             fprintf(fp, "2 4\n");
-            fprintf(fp, "yes\n");
-            fprintf(fp, "test\n");
             break;
 
         case 4:
-            manual_graph(5, 5, fp, 2);
+            manual_mode(5, 5, fp, g_type, 2);
             fprintf(fp, "0 1\n");
             fprintf(fp, "0 2\n"); 
             fprintf(fp, "2 3\n"); 
             fprintf(fp, "0 4\n");
             fprintf(fp, "2 4\n");
-            fprintf(fp, "yes\n");
-            fprintf(fp, "test\n");
             break;
         case 5:
-            random_graph(10, 8, fp, 1);
-            FILE *out = fopen("./output/test", "r");
-            pclose(fp);
-            int r = analyze_rgraph(opt, 10, 8, out, 1);
-            return r;
+            g_type = 2;
+            e = 10; n = 8; d = 1;
+            break;
+            
+        case 6: 
+            g_type = 3;
+            e = 13; n = 11; d = 1;
+            strcpy(req, "Create a directed graph with 11 vertices and 13 edges\n");
+            break;
+
     }
+
+    if (g_type == 2){
+        manual_mode(e, n, fp, g_type, d);
+    }
+    else if (g_type == 3){
+        llm_mode(fp);
+        fprintf(fp, "%s", req);
+        while (strstr(line, "Raw response:")){
+            fgets(line, sizeof(line), fp);
+        }
+    }
+
+
+    save_test(fp);
+    FILE *out = fopen("./output/test", "r");
     pclose(fp);
 
-    FILE *out = fopen("./output/test", "r");
-    FILE *in = argc > opt ? fopen(argv[opt], "r") : NULL;
-    if (in == NULL){
-        printf("Provide comparison file\n");
-        return 0;
+    if (g_type == 1){
+        FILE *in = argc > opt ? fopen(argv[opt], "r") : NULL;
+        if (in == NULL){
+            printf("Provide comparison file\n");
+            return 0;
+        }
+        
+        if (in != NULL && out != NULL){
+            return compare_files(out, in);
+        }
     }
     
-    if (in != NULL && out != NULL){
-        return compare_files(out, in);
+    else if (g_type == 2 || g_type == 3){
+        int r = analyze_rgraph(opt, e, n, out, d);
+            return r;
+
     }
+    
 
     
 }
 
-void testrandom(FILE * fp, int opt){
-    switch (opt){
-        case 1:
-            random_graph(10, 8, fp, 1);
-            FILE *out = fopen("./output/test", "r");
-            pclose(fp);
-            int r = analyze_rgraph(opt, 10, 8, out, 1);
-            break;
-    }
-
-}
 
 void print_test_status(int *status){
 
@@ -203,7 +212,7 @@ int main(int argc, char **argv){
 
     int test_status[5];
 
-    for (int i = 1; i <= 5 ; i++){
+    for (int i = 1; i <= 6 ; i++){
 
         FILE *fp = popen("stdbuf -oL ./graph_cli", "w");
     
