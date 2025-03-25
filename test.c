@@ -7,9 +7,6 @@
 
 
 
-// function to go through imput to manual graph generation
-// type1: 1 - manual  graph 2 - random graph
-// type2: 1 - directed graph 2 - undirected graph
 
 /*writes an entry to a test file and prints it on stdin*/
 void add_entry(FILE *testfile, const char* format, ...){
@@ -25,13 +22,39 @@ void add_entry(FILE *testfile, const char* format, ...){
     va_end(args);
 }
 
+void add_edge(FILE * fp, FILE *exp_out, int n1, int n2, int d, int skip){
+    fprintf(fp, "%d %d\n", n1, n2);
+    if (skip) return; // used for cases where edges are wrong 
+    if (d == 1)
+        fprintf(exp_out, "    %d -> %d;\n", n1, n2);
+    else if (d == 2)
+        fprintf(exp_out, "    %d -- %d;\n", n1, n2);
+}
 
-void manual_mode(int e, int n, FILE *fp, int type1, int type2){
+
+// function to go through imput to manual graph generation
+// type1: 1 - manual  graph 2 - random graph
+// type2: 1 - directed graph 2 - undirected graph
+
+FILE * manual_mode(int i, int e, int n, FILE *fp, int type1, int type2){
+    char filename[50];
     fprintf(fp, "1\n");
     fprintf(fp, "%d\n", type1);
     fprintf(fp, "%d\n", type2);
     fprintf(fp, "%d\n", n);
     fprintf(fp, "%d\n", e);
+    if (type1 == 1){
+        sprintf(filename, "./input/in%d.txt", i);
+        FILE * expected_out = fopen (filename, "w");
+        if (type2 == 1)
+            fprintf(expected_out, "digraph G {\n");
+        else if (type2 == 2)
+            fprintf(expected_out, "graph G {\n");
+        return expected_out;
+    }
+
+    return NULL;
+
 }
 
 
@@ -40,16 +63,33 @@ void llm_mode(FILE *fp){
     fprintf(fp, "2\n");
 }
 
-int compare_files(FILE *in, FILE *out, FILE *testfile){
+int compare_files(FILE *in, FILE *out){
     char c1, c2;
-    int result = 1;
+    int status;
+    char target_line[50]; char buffer[50];
+    char *cursor;
     
+    while (fgets(target_line, sizeof(target_line), out) != NULL){
+        status = 0;
+        if (cursor == NULL) 
+            in = fopen("./output/test", "r");
+        while (fgets(buffer, sizeof(buffer), in) != NULL) {
+            if (strstr(buffer, target_line) != NULL) {
+                status = 1; // Linia została znaleziona
+            }
+        }
+        if (status < 1) break;
+    }
+    /*
     while(((c1 = fgetc(in)) != EOF) && ((c2 =fgetc(out)) != EOF)){
+        //printf("c1 = %c, c2 = %c\n", c1, c2);
         if(c1 != c2){
             result = 0;
         }
     }
-    return result;
+    */
+    
+    return status;
 
 }
 
@@ -109,13 +149,14 @@ int analyze_rgraph( int e, int n, FILE *out, int type, FILE *testfile){
     add_entry(testfile, "\n");
     if (m>0)
         for (int i = 0; i < m; i++)
-                add_entry(testfile, "     missing node %d\n", missing_nodes[i]);
+                add_entry(testfile, "(!) MISSING node %d\n", missing_nodes[i]);
             
     if (a_n == n) conditions[1] = 1;
     if (a_e == e) conditions[2] = 1;
 
     
-    add_entry(testfile, "    condition 1 (graph type)  is %s: %d (expected %d)\n", conditions[0] == 1 ? "  met" : "unmet", a_t, type);
+    add_entry(testfile, "    condition 1 (graph type)  is %s: %s (expected %s)\n",
+         conditions[0] == 1 ? "  met" : "unmet", a_t == 1 ? "Directed" : "Undirected", type == 1 ? "Directed" : "Undirected");
     add_entry(testfile, "    condition 2 (node number) is %s: %d (expected %d)\n", conditions[1] == 1 ? "  met" : "unmet", a_n, n);
     add_entry(testfile, "    condition 3 (edge number) is %s: %d (expected %d)\n\n", conditions[2] == 1 ? "  met" : "unmet", a_e, e);
 
@@ -127,77 +168,133 @@ int analyze_rgraph( int e, int n, FILE *out, int type, FILE *testfile){
 
 }
 
-int test(FILE * fp, int opt){
+int test(FILE * fp, int opt, FILE  * testfile){
     int result = 0;
     char line[100];
     int g_type = 1;
     int e, n, d;
     char req[100];
     char *files[] = {"input/in.txt", "input/in2.txt", "input/in3.txt", "input/in4.txt"};
-
-    char filename[50];
-    sprintf(filename, "./tests_output/test_%d", opt);
-    FILE *testfile = fopen(filename, "w");
+    FILE *exp_out;
+    
 
     add_entry(testfile, "> DETAILS\n");
     switch (opt) {
         case 1:
             e = 3; n = 3; d = 2;
-            manual_mode(e, n, fp, g_type, d);
+            exp_out = manual_mode(opt, e, n, fp, g_type, d);
+            add_edge(fp, exp_out, 0, 1, d, 0);
+            add_edge(fp, exp_out, 0, 2, d, 0);
+            add_edge(fp, exp_out, 1, 2, d, 0);
             // 3 mnode and 3 edges graph 
+            /*
             fprintf(fp, "0 1\n");
             fprintf(fp, "0 2\n");
             fprintf(fp, "2 1\n");
+            */
             break;
         case 2:
-            e = 3; n = 3; d = 1;
-            manual_mode(e, n, fp, g_type, d);
+            e = 4; n = 4; d = 1;
+            exp_out = manual_mode(opt, e, n, fp, g_type, d);
             // 3 mnode and 3 edges graph 
+            add_edge(fp, exp_out, 0, 1, d, 0);
+            add_edge(fp, exp_out, 0, 2, d, 0);
+            add_edge(fp, exp_out, 2, 1, d, 0);
+            add_edge(fp, exp_out, 3, 1, d, 0);
+            /*
             fprintf(fp, "0 1\n");
             fprintf(fp, "0 2\n");
             fprintf(fp, "2 1\n");
+            */
             break;
         case 3:
-            e = 3; n = 5;d = 1;
-            manual_mode(e, n, fp, g_type, d);
+            e = 4; n = 5;d = 1;
+            exp_out = manual_mode(opt, e, n, fp, g_type, d);
             // 3 mnode and 3 edges graph 
+            add_edge(fp, exp_out, 0, 1, d, 0);
+            add_edge(fp, exp_out, 0, 2, d, 0);
+            add_edge(fp, exp_out, 0, 2, d, 1);//this edge exists
+            add_edge(fp, exp_out, 2, 7, d, 1); // node index out of range
+            add_edge(fp, exp_out, 2, 4, d, 0);
+            add_edge(fp, exp_out, 2, 3, d, 0);
+            /*
             fprintf(fp, "0 1\n");
             fprintf(fp, "0 1\n"); //this edge exists
             fprintf(fp, "2 7\n"); // node index out of range
             fprintf(fp, "0 4\n");
             fprintf(fp, "2 4\n");
+            */
             break;
 
         case 4:
             e = 5; n = 5;d = 2;
-            manual_mode(e, n, fp, g_type, d);
+            exp_out = manual_mode(opt, e, n, fp, g_type, d);
+            add_edge(fp, exp_out, 0, 4, d, 0);
+            add_edge(fp, exp_out, 0, 2, d, 0);
+            add_edge(fp, exp_out, 0, 1, d, 0);
+            add_edge(fp, exp_out, 2, 4, d, 0);
+            add_edge(fp, exp_out, 2, 3, d, 0);
+            /*
             fprintf(fp, "0 1\n");
             fprintf(fp, "0 2\n"); 
             fprintf(fp, "2 3\n"); 
             fprintf(fp, "0 4\n");
             fprintf(fp, "2 4\n");
+            */
             break;
-        case 5: // random graphs
+        case 5:
+            e = 25; n = 20;d = 2;
+            exp_out = manual_mode(opt, e, n, fp, g_type, d);
+            add_edge(fp, exp_out, 0, 1, d, 0);
+            add_edge(fp, exp_out, 0, 2, d, 0);
+            add_edge(fp, exp_out, 0, 3, d, 0);
+            add_edge(fp, exp_out, 0, 4, d, 0);
+            add_edge(fp, exp_out, 0, 5, d, 0);
+            add_edge(fp, exp_out, 0, 6, d, 0);
+            add_edge(fp, exp_out, 0, 7, d, 0);
+            add_edge(fp, exp_out, 0, 8, d, 0);
+            add_edge(fp, exp_out, 0, 9, d, 0);
+            add_edge(fp, exp_out, 0, 10, d, 0);
+            add_edge(fp, exp_out, 0, 11, d, 0);
+            add_edge(fp, exp_out, 0, 12, d, 0);
+            add_edge(fp, exp_out, 0, 13, d, 0);
+            add_edge(fp, exp_out, 0, 14, d, 0);
+            add_edge(fp, exp_out, 0, 15, d, 0);
+            add_edge(fp, exp_out, 0, 16, d, 0);
+            add_edge(fp, exp_out, 0, 17, d, 0);
+            add_edge(fp, exp_out, 0, 18, d, 0);
+            add_edge(fp, exp_out, 0, 19, d, 0);
+
+            add_edge(fp, exp_out, 1, 2, d, 0);
+            add_edge(fp, exp_out, 1, 3, d, 0);
+            add_edge(fp, exp_out, 1, 4, d, 0);
+
+            add_edge(fp, exp_out, 2, 3, d, 0);
+            add_edge(fp, exp_out, 2, 4, d, 0);
+            add_edge(fp, exp_out, 2, 5, d, 0);
+   
+            break;
+        case 6: // random graphs
             g_type = 2;
-            e = 5; n = 5; d = 1;
+            e = 15; n = 5; d = 1;
             break;
 
-        case 6:
+        case 7:
             g_type = 2;
-            e = 20; n = 20; d = 2;
+            e = 40; n = 20; d = 2;
             break;
         
-        case 7:
+        case 8:
             g_type = 2;
             e = 30; n = 9; d = 1;
             break;
             
-        case 8: // graphs made with llm
+        case 9: // graphs made with llm
             g_type = 3;
             e = 13; n = 11; d = 2;
             strcpy(req, "Create an udirected graph with 11 vertices and 13 edges\n");
             break;
-        case 9: 
+        case 10: 
             g_type = 3;
             e = 10; n = 5; d = 1;
             strcpy(req, "Create a directed graph with 5 vertices and 10 edges\n");
@@ -218,7 +315,7 @@ int test(FILE * fp, int opt){
     
     add_entry(testfile, "    Asked for %d edges\n", e);
     if (g_type == 2){
-        manual_mode(e, n, fp, g_type, d);
+        exp_out = manual_mode(opt, e, n, fp, g_type, d);
     }
     else if (g_type == 3){
        
@@ -236,17 +333,23 @@ int test(FILE * fp, int opt){
     FILE *out = fopen("./output/test", "r");
     pclose(fp);
 
-    add_entry(testfile, "> OUTPUT\n");
+    add_entry(testfile, "> PROGRAM OUTPUT\n");
 
     if (g_type == 1){
-        FILE *in = fopen(files[opt-1], "r");
-        if (in == NULL){
+        //FILE *in = fopen(files[opt-1], "r"); // zmiana tu
+        fprintf(exp_out, "}\n");
+        //fputs("}", exp_out);
+        if (exp_out == NULL){
             add_entry(testfile, "Eror: No comparison file\n");
         }
         
-        if (in != NULL && out != NULL){
-            result = compare_files(out, in, testfile);
-            fclose(in);
+        if (exp_out != NULL && out != NULL){
+            fclose(exp_out);
+            char filename[50];
+            sprintf(filename, "./input/in%d.txt", opt);
+            FILE *exp_out = fopen(filename, "r");
+            result = compare_files(out, exp_out);
+            fclose(exp_out);
             fclose(out);
             out = fopen("./output/test", "r");
             while (fgets(line, sizeof(line), out))
@@ -258,7 +361,7 @@ int test(FILE * fp, int opt){
         result = analyze_rgraph( e, n, out, d, testfile);
 
     }
-    fclose(testfile);
+    
     fclose(out);
     return result;
 
@@ -284,37 +387,43 @@ void print_test_status(int *status, int n){
 }
 
 int main(){
-
+    char filename[50];
     int status;
     char path[PATH_MAX];
 
-    int t_num = 9;
+    int t_num = 10;
     int *test_status = malloc(sizeof(int) * t_num);
 
     for (int i = 1; i <= t_num ; i++){
-
+        
         FILE *fp = popen("./graph_cli > /dev/null 2>&1", "w"); // remove stdbuf -oL
-    
+
+        
+        sprintf(filename, "./tests_output/test_%d", i);
+        FILE *testfile = fopen(filename, "w");
+
        if (fp != NULL){
             printf("Test %d STARTED\n", i);
-            int r = test(fp, i);
+            int r = test(fp, i, testfile);
             if (r == 0){
                 printf("\033[0;31m"); //red color
                 printf("Test %d FINISHED: test resulted in %s\n\n", i, "FAILURE");
                 printf("\033[0m");
+                fputs("> RESULT\n    FAILURE", testfile);
             }
             else if (r ==1){
                 printf("\033[0;32m"); //green color
                 printf("Test %d FINISHED: test resulted in %s\n\n", i, "SUCCESS");
                 printf("\033[0m");
+                fputs("> RESULT\n    SUCCESS", testfile);
             }
             test_status[i-1] = r;
             system("xdg-open output/test.png"); //display image
             printf("Press Enter to continue");
             while(getchar() != '\n');
             printf("\n");
-            
        }
+       fclose(testfile);
         
     
     }
