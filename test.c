@@ -284,8 +284,12 @@ int main(){
                 printf("Test %d FINISHED: test resulted in %s\n\n", i, "SUCCESS");
                 printf("\033[0m");
             }
-            //printf("Test %d FINISHED: test resulted in %s\n\n", i, r == 1 ? "SUCCESS" : "FAILURE");
             test_status[i-1] = r;
+            system("xdg-open output/test.png"); //display image
+            printf("Press Enter to continue");
+            while(getchar() != '\n');
+            printf("\n");
+            
        }
         
     
