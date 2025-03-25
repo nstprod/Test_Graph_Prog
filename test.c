@@ -27,13 +27,16 @@ void llm_mode(FILE *fp){
 
 int compare_files(FILE *in, FILE *out){
     char c1, c2;
-
+    int result = 1;
+    
     while(((c1 = fgetc(in)) != EOF) && ((c2 =fgetc(out)) != EOF)){
+        printf("%c",c1);
         if(c1 != c2){
-            return 0;
+            result = 0;
         }
     }
-    return 1;
+    printf("\n");
+    return result;
 
 }
 
@@ -80,6 +83,7 @@ int analyze_rgraph( int e, int n, FILE *out, int type){
         }
     }
     int *missing_nodes = malloc(sizeof(int)*n);
+    printf(">analysis:\n");
     printf("    Nodes encountered: ");
     int m = 0;
     for (int i = 0; i < n; i++){
@@ -214,8 +218,9 @@ int test(FILE * fp, int opt){
     FILE *out = fopen("./output/test", "r");
     pclose(fp);
 
+    printf(">output:\n");
+
     if (g_type == 1){
-        puts(files[opt-1]);
         FILE *in = fopen(files[opt-1], "r");
         if (in == NULL){
             printf("Provide comparison file\n");
