@@ -12,12 +12,14 @@ int handle_test_case(FILE * fp, int opt, FILE  * testfile){
     char req[100];
 
     // graph characteristics 
-    int e, n, t, d; // edges, nodes, type, direction
+    int e; // edges number
+    int n; // nodes number
+    int t; // type
+    int d; // direction
 
     // type distinction : 1 - manually written
     //                    2 - randomly generated
     //                    3 - made with llm
-    //int g_type = 1;
 
     FILE *exp_out; // expected output, used for checking correctness of edges
     
@@ -40,7 +42,7 @@ int handle_test_case(FILE * fp, int opt, FILE  * testfile){
     n = info[r][1];
     t = info[r][2];
     d = info[r][3];
-    printf("e: %d, n: %d, t: %d, d: %d\n", e, n, t, d);
+
     if (t != 3)
         exp_out = manual_mode(opt, e, n, fp, t, d);
     switch (opt) {
@@ -58,7 +60,7 @@ int handle_test_case(FILE * fp, int opt, FILE  * testfile){
         case 3:
             add_edge(fp, exp_out, 0, 1, d, 0);
             add_edge(fp, exp_out, 0, 2, d, 0);
-            add_edge(fp, exp_out, 0, 2, d, 1);//this edge exists
+            add_edge(fp, exp_out, 0, 2, d, 1); //this edge exists
             add_edge(fp, exp_out, 2, 7, d, 1); // node index out of range
             add_edge(fp, exp_out, 2, 4, d, 0);
             add_edge(fp, exp_out, 2, 3, d, 0);
