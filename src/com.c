@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include <stdlib.h>
 void add_edge(FILE * fp, FILE *exp_out, int n1, int n2, int d, int skip){
     fprintf(fp, "%d %d\n", n1, n2);
     if (skip) return; // used for cases where edges are wrong 
@@ -43,9 +43,13 @@ void llm_mode(FILE *fp, char * req){
 }
 
 
-void save_test(FILE * fp){
+char * save_test(FILE * fp, int i){
+    static char filename[30];
     fprintf(fp, "yes\n");
-    fprintf(fp, "test\n");
+    
+    fprintf(fp, "test%d\n", i);
+    snprintf(filename, sizeof(filename), "./output/test%d", i);
+    return filename;
 }
 
 /*writes an entry to a test file and prints it on stdin*/

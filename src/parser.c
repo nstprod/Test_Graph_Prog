@@ -3,16 +3,14 @@
 #include <string.h>
 #include "com.h"
 
-int compare_files(FILE *in, FILE *out){
-    char c1, c2;
+int compare_files(FILE *in, FILE *out, char * test_output){
     int status;
     char target_line[50]; char buffer[50];
-    char *cursor;
     
-    while (fgets(target_line, sizeof(target_line), out) != NULL){
+    while ( fgets(target_line, sizeof(target_line), out) != NULL){
         status = 0;
-        if (cursor == NULL) 
-            in = fopen("./output/test", "r");
+        in = fopen(test_output, "r");
+
         while (fgets(buffer, sizeof(buffer), in) != NULL) {
             if (strstr(buffer, target_line) != NULL) {
                 status = 1;
@@ -20,15 +18,6 @@ int compare_files(FILE *in, FILE *out){
         }
         if (status < 1) break;
     }
-    /*
-    while(((c1 = fgetc(in)) != EOF) && ((c2 =fgetc(out)) != EOF)){
-        //printf("c1 = %c, c2 = %c\n", c1, c2);
-        if(c1 != c2){
-            result = 0;
-        }
-    }
-    */
-    
     return status;
 
 }
@@ -91,10 +80,10 @@ int analyze_graph( int e, int n, FILE *out, int type, FILE *testfile){
     if (a_e == e) conditions[2] = 1;
 
     
-    add_entry(testfile, "    condition 1 (graph type)  is %s: %s (expected %s)\n",
+    add_entry(testfile, "    Condition 1 (graph type)  is %s: %s (expected %s)\n",
          conditions[0] == 1 ? "  met" : "unmet", a_t == 1 ? "Directed" : "Undirected", type == 1 ? "Directed" : "Undirected");
-    add_entry(testfile, "    condition 2 (node number) is %s: %d (expected %d)\n", conditions[1] == 1 ? "  met" : "unmet", a_n, n);
-    add_entry(testfile, "    condition 3 (edge number) is %s: %d (expected %d)\n\n", conditions[2] == 1 ? "  met" : "unmet", a_e, e);
+    add_entry(testfile, "    Condition 2 (node number) is %s: %d (expected %d)\n", conditions[1] == 1 ? "  met" : "unmet", a_n, n);
+    add_entry(testfile, "    Condition 3 (edge number) is %s: %d (expected %d)\n\n", conditions[2] == 1 ? "  met" : "unmet", a_e, e);
 
     if (conditions[0] == 1 &&
         conditions[1] == 1 &&

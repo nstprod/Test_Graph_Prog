@@ -8,7 +8,7 @@ int main(){
 
     int t_num = 10;
     int *test_status = malloc(sizeof(int) * t_num);
-
+    system("make clean > /dev/null 2>&1"); // remove old images and tests
     for (int i = 1; i <= t_num ; i++){
         
         FILE *fp = popen("./graph_cli > /dev/null 2>&1", "w"); // remove stdbuf -oL
@@ -35,13 +35,13 @@ int main(){
                 fputs("> RESULT\n    SUCCESS", testfile);
             }
             test_status[i-1] = r;
-            system("xdg-open output/test.png"); //display image
+            
             printf("Press Enter to continue");
             while(getchar() != '\n');
             printf("\n");
        }
        fclose(testfile);
-        
+       
     
     }
     print_test_status(test_status, t_num);

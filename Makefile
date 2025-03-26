@@ -26,5 +26,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 # Clean up object files, the executable, and output directory
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJ) 
 	rm -f output/*
+	rm -f tests_output/*
