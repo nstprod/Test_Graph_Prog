@@ -1,0 +1,9 @@
+> DETAILS
+    Enabled 'chat mode'
+    Requested: Create a directed graph with 5 vertices and 10 edges
+    Enabled 'Directed' graph type
+    Asked for 5 nodes
+    Asked for 10 edges
+    (!)Error: Connection to LLM failed
+> RESULT
+    FAILURE

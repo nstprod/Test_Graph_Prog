@@ -1,0 +1,21 @@
+> DETAILS
+    Enabled 'manual parameters input'
+    Enabled 'manual edge input'
+    Enabled 'Undirected' graph type
+    Asked for 5 nodes
+    Asked for 5 edges
+    Asked for edge 0 4
+    Asked for edge 0 2
+    Asked for edge 0 1
+    Asked for edge 2 4
+    Asked for edge 2 3
+> PROGRAM OUTPUT
+    graph G {
+        0 -- 1;
+        0 -- 2;
+        0 -- 4;
+        2 -- 3;
+        2 -- 4;
+    }
+> RESULT
+    SUCCESS

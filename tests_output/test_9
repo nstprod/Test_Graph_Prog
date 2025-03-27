@@ -1,0 +1,9 @@
+> DETAILS
+    Enabled 'chat mode'
+    Requested: Create an udirected graph with 11 vertices and 13 edges
+    Enabled 'Undirected' graph type
+    Asked for 11 nodes
+    Asked for 13 edges
+    (!)Error: Connection to LLM failed
+> RESULT
+    FAILURE

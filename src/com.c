@@ -39,7 +39,7 @@ FILE * manual_mode(int i, int e, int n, FILE *fp, int type, int dir){
 
 void llm_mode(FILE *fp, char * req){
     fprintf(fp, "2\n");
-    fprintf(fp, "%s", req);
+    fprintf(fp, "%s\n", req);
 }
 
 

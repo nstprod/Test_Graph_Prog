@@ -1,0 +1,19 @@
+> DETAILS
+    Enabled 'manual parameters input'
+    Enabled 'manual edge input'
+    Enabled 'Directed' graph type
+    Asked for 4 nodes
+    Asked for 4 edges
+    Asked for edge 0 1
+    Asked for edge 0 2
+    Asked for edge 2 1
+    Asked for edge 3 1
+> PROGRAM OUTPUT
+    digraph G {
+        0 -> 2;
+        0 -> 1;
+        2 -> 1;
+        3 -> 1;
+    }
+> RESULT
+    SUCCESS

@@ -16,7 +16,7 @@ int compare_files(FILE *in, FILE *out, char * test_output){
                 status = 1;
             }
         }
-        if (status < 1) break;
+        if (status < 1) printf("    missing %s\n", target_line);
     }
     return status;
 
@@ -81,9 +81,9 @@ int analyze_graph( int e, int n, FILE *out, int type, FILE *testfile){
 
     
     add_entry(testfile, "    Condition 1 (graph type)  is %s: %s (expected %s)\n",
-         conditions[0] == 1 ? "  met" : "unmet", a_t == 1 ? "Directed" : "Undirected", type == 1 ? "Directed" : "Undirected");
-    add_entry(testfile, "    Condition 2 (node number) is %s: %d (expected %d)\n", conditions[1] == 1 ? "  met" : "unmet", a_n, n);
-    add_entry(testfile, "    Condition 3 (edge number) is %s: %d (expected %d)\n\n", conditions[2] == 1 ? "  met" : "unmet", a_e, e);
+         conditions[0] == 1 ? "  satisfied" : "unsatisfied", a_t == 1 ? "Directed" : "Undirected", type == 1 ? "Directed" : "Undirected");
+    add_entry(testfile, "    Condition 2 (node number) is %s: %d (expected %d)\n", conditions[1] == 1 ? "  satisfied" : "unsatisfied", a_n, n);
+    add_entry(testfile, "    Condition 3 (edge number) is %s: %d (expected %d)\n\n", conditions[2] == 1 ? "  satisfied" : "unsatisfied", a_e, e);
 
     if (conditions[0] == 1 &&
         conditions[1] == 1 &&

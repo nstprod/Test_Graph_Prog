@@ -1,0 +1,17 @@
+> DETAILS
+    Enabled 'manual parameters input'
+    Enabled 'manual edge input'
+    Enabled 'Undirected' graph type
+    Asked for 3 nodes
+    Asked for 3 edges
+    Asked for edge 0 1
+    Asked for edge 0 2
+    Asked for edge 1 2
+> PROGRAM OUTPUT
+    graph G {
+        0 -- 2;
+        0 -- 1;
+        1 -- 2;
+    }
+> RESULT
+    SUCCESS

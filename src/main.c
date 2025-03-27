@@ -11,7 +11,7 @@ int main(){
     system("make clean > /dev/null 2>&1"); // remove old images and tests
     for (int i = 1; i <= t_num ; i++){
         
-        FILE *fp = popen("./graph_cli > /dev/null 2>&1", "w"); // remove stdbuf -oL
+        FILE *fp = popen("./tested_program/graph_cli > /dev/null 2>&1", "w"); // remove stdbuf -oL
 
         
         sprintf(filename, "./tests_output/test_%d", i);
